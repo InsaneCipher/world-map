@@ -68,8 +68,22 @@ header h1{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:30
 #guess-info{font-size:.62rem;color:var(--dim)}
 
 /* Hi score */
-#hi-wrap{margin-top:auto;padding-top:12px;border-top:1px solid rgba(100,150,255,.08)}
+#hi-wrap{padding-top:12px;border-top:1px solid rgba(100,150,255,.08);flex-shrink:0}
 #hi-val{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:var(--dim)}
+
+/* History */
+#history-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+#history-list{overflow-y:auto;display:flex;flex-direction:column;gap:4px;flex:1;padding-right:2px}
+.hist-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:4px;
+  border:1px solid transparent;flex-shrink:0;animation:slideIn .25s ease-out}
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.hist-item.hi-correct{background:rgba(26,122,58,.15);border-color:rgba(78,184,122,.2)}
+.hist-item.hi-timeout{background:rgba(100,60,10,.15);border-color:rgba(180,130,50,.2)}
+.hist-flag{font-size:1.1rem;flex-shrink:0;line-height:1}
+.hist-name{font-size:.6rem;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-pts{font-size:.58rem;font-weight:700;white-space:nowrap}
+.hi-correct .hist-pts{color:#4eb87a}
+.hi-timeout .hist-pts{color:#c8a050}
 
 /* ── GLOBE ── */
 #globe-wrap{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;
@@ -165,7 +179,7 @@ header h1{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:30
 
   <!-- LEFT -->
   <div id="left-panel">
-    <div>
+    <div style="flex-shrink:0">
       <div class="plabel">Lives</div>
       <div id="hearts">
         <span class="heart" id="h0">❤️</span>
@@ -176,14 +190,19 @@ header h1{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:30
       </div>
     </div>
 
-    <div>
+    <div style="flex-shrink:0">
       <div class="plabel">Score</div>
       <div id="score-box"><div id="score">0</div></div>
     </div>
 
-    <div id="guess-info" class="plabel">Round 1</div>
+    <div id="guess-info" class="plabel" style="flex-shrink:0">Round 1</div>
 
-    <div id="last-result"></div>
+    <div id="last-result" style="flex-shrink:0"></div>
+
+    <div id="history-wrap">
+      <div class="plabel" style="flex-shrink:0;margin-bottom:5px">Countries</div>
+      <div id="history-list"></div>
+    </div>
 
     <div id="hi-wrap">
       <div class="plabel">Best Score</div>
@@ -394,6 +413,7 @@ function calcPts(){
 function startGame(){
   document.getElementById('overlay-screen').style.display='none';
   lives=5;score=0;round=0;globalSecs=300;seenCountries=new Set();
+  document.getElementById('history-list').innerHTML='';
   updateHearts();updateScore();
   document.getElementById('global-timer').textContent=fmtTime(globalSecs);
   document.getElementById('global-timer').className='';
@@ -496,6 +516,7 @@ function handleCountryClick(feature){
     if(score>hiScore){hiScore=score;localStorage.setItem('fq-hi',hiScore);document.getElementById('hi-val').textContent=hiScore;}
     markPip(guessCount,'correct');
     showResult('correct',`✓ ${NAMES[nid(id)]||'?'} · +${pts} pts · +10s`);
+    addToHistory('correct', pts);
     paintCountry(id,'#1a7a3a');
     flashGlobe('#0a2e18');
     setTimeout(()=>{restoreAllCountryColors();nextQuestion();},1200);
@@ -541,6 +562,7 @@ function handleCountryClick(feature){
 function onTurnTimeout(){
   const name=NAMES[nid(quizTarget.id)]||'?';
   showResult('timeout',`⏱ Time's up — it was ${name}`);
+  addToHistory('timeout', 0);
   paintCountry(quizTarget.id,'#1a7a3a');
   flashGlobe('#2e2200');
   lives=Math.max(0,lives-1);
@@ -598,6 +620,17 @@ function markPip(index,type){
   const p=document.getElementById('gp'+index);
   if(type==='wrong'){p.textContent='✕';p.className='gpip used-wrong';}
   else{p.textContent='✓';p.className='gpip used-correct';}
+}
+function addToHistory(type, pts){
+  const id=nid(quizTarget.id), a2=A2[id];
+  const name=NAMES[id]||'?';
+  const item=document.createElement('div');
+  item.className='hist-item hi-'+type;
+  item.innerHTML=`<span class="hist-flag">${flag(a2)}</span>`+
+    `<span class="hist-name">${name}</span>`+
+    `<span class="hist-pts">${type==='correct'?'+'+pts+'pts':'miss'}</span>`;
+  const list=document.getElementById('history-list');
+  list.insertBefore(item, list.firstChild); // newest at top
 }
 
 // ════════════════════════════════════════════
