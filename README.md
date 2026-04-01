@@ -13,8 +13,7 @@ A flag geography quiz game built as a single static HTML file, playable directly
 3. You have **5 guesses** per round before the turn ends
 4. The **country name** is revealed after your 1st wrong guess
 5. The **continent** is revealed after your 3rd wrong guess
-6. A 60-second turn timer drains on screen — answer faster for more points
-7. Each correct answer adds **+10 seconds** to the global clock
+6. A 60-second turn timer drains on screen
 
 ## Scoring
 
