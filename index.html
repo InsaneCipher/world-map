@@ -554,14 +554,8 @@ function nextQuestion(){
   document.getElementById('last-result').textContent='';
   document.getElementById('last-result').className='';
 
-  // Spin to rough region with jitter
-  const c=d3.geoCentroid(quizTarget);
-  const jitter=[(Math.random()-.5)*90,(Math.random()-.5)*45];
-  const cur=projection.rotate();
-  const target=[-c[0]+jitter[0],-c[1]+jitter[1]];
-  d3.transition().duration(800).ease(d3.easeCubicInOut)
-    .tween('rot',()=>t=>{projection.rotate(d3.interpolate(cur,target)(t));redraw();})
-    .on('end',()=>startTurnTimer());
+  // Start timer immediately — no spin, player finds it themselves
+  startTurnTimer();
 }
 
 function handleCountryClick(feature){
