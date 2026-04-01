@@ -543,11 +543,10 @@ function handleCountryClick(feature){
     clearInterval(turnTimerID);
     const pts=calcPts();
     score+=pts;
-    globalSecs=Math.min(globalSecs+10,300);
     updateScore(pts);
     if(score>hiScore){hiScore=score;localStorage.setItem('fq-hi',hiScore);document.getElementById('hi-val').textContent=hiScore;}
     markPip(guessCount,'correct');
-    showResult('correct',`✓ ${NAMES[nid(id)]||'?'} · +${pts} pts · +10s`);
+    showResult('correct',`✓ ${NAMES[nid(id)]||'?'} · +${pts} pts`);
     addToHistory('correct', pts);
     paintCountry(id,'#1a7a3a');
     flashGlobe('#0a2e18');
