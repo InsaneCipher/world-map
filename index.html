@@ -496,10 +496,7 @@ header h1{font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:60
     <!-- Flag card hero -->
     <div id="flag-card">
       <div class="plabel">Find this country</div>
-      <div id="flag-emoji-wrap" style="display:flex;align-items:center;justify-content:center;min-height:7rem">
-        <img id="flag-emoji" src="" alt="" style="max-height:7rem;max-width:100%;border-radius:3px;
-          filter:drop-shadow(0 8px 28px rgba(0,0,0,.8));display:block">
-      </div>
+      <div id="flag-emoji-wrap" style="display:flex;align-items:center;justify-content:center;min-height:7rem"></div>
       <div id="flag-country-name" class="placeholder">???</div>
       <div id="flag-continent"></div>
       <div id="flag-hint">Guess 2: name · Guess 4: continent</div>
@@ -590,6 +587,7 @@ header h1{font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:60
   border-radius:4px;padding:4px 11px;font-size:.68rem;color:var(--accent2);pointer-events:none;
   opacity:0;transition:opacity .1s;letter-spacing:.04em;backdrop-filter:blur(10px);z-index:100"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
@@ -718,16 +716,27 @@ const cLon=document.getElementById('c-lon'),cLat=document.getElementById('c-lat'
 // HELPERS
 // ════════════════════════════════════════════
 function flag(a2){if(!a2)return'🏳️';return[...a2.toUpperCase()].map(c=>String.fromCodePoint(0x1F1E6-65+c.charCodeAt(0))).join('');}
-// Flag images via jsDelivr (serves npm packages, extremely reliable, GitHub Pages compatible)
-// Package: https://github.com/lipis/flag-icons
-function flagImg(a2,size=32){
-  if(!a2)return'<span style="font-size:1.5rem">🏳️</span>';
-  const code=a2.toLowerCase();
-  const emojiText=[...a2.toUpperCase()].map(c=>String.fromCodePoint(0x1F1E6-65+c.charCodeAt(0))).join('');
-  return`<img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/flags/4x3/${code}.svg" `+
-    `onerror="this.style.display='none';this.nextElementSibling.style.display='inline'" `+
-    `alt="${a2}" class="flag-img" style="height:${size}px;width:auto;border-radius:2px;display:inline-block;vertical-align:middle">`+
-    `<span style="display:none;font-size:${Math.round(size*.7)}px;line-height:1">${emojiText}</span>`;
+
+// Renders a flag emoji as an actual <img> via twemoji — works on Chrome/Windows
+function flagImg(a2, size=32){
+  if(!a2)return'<span>🏳️</span>';
+  const emojiStr=flag(a2);
+  // twemoji.parse returns HTML with <img> tags replacing emoji
+  return twemoji.parse(emojiStr,{
+    folder:'svg',ext:'.svg',
+    attributes:()=>({style:`height:${size}px;width:auto;vertical-align:middle;border-radius:2px`})
+  });
+}
+
+// Sets the main flag display image using twemoji
+function setMainFlag(a2){
+  const wrap=document.getElementById('flag-emoji-wrap');
+  if(!a2){wrap.innerHTML='';return;}
+  const emojiStr=flag(a2);
+  wrap.innerHTML=twemoji.parse(emojiStr,{
+    folder:'svg',ext:'.svg',
+    attributes:()=>({style:'max-height:7rem;max-width:100%;border-radius:3px;filter:drop-shadow(0 8px 28px rgba(0,0,0,.8));display:block'})
+  });
 }
 function fmtTime(s){return`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
 
@@ -830,16 +839,7 @@ function nextQuestion(){
   document.getElementById('guess-info').textContent='Round '+round;
 
   const id=nid(quizTarget.id),a2=A2[id];
-  const flagEl=document.getElementById('flag-emoji');
-  flagEl.dataset.tried='';
-  flagEl.src=`https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/flags/4x3/${a2.toLowerCase()}.svg`;
-  flagEl.alt=a2;
-  flagEl.onerror=function(){
-    if(this.dataset.tried===''){
-      this.dataset.tried='1';
-      this.src=`https://flagcdn.com/w160/${a2.toLowerCase()}.png`;
-    }
-  };
+  setMainFlag(a2);
   document.getElementById('flag-country-name').textContent='???';
   document.getElementById('flag-country-name').className='placeholder';
   document.getElementById('flag-continent').textContent='';
