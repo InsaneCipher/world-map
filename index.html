@@ -716,10 +716,10 @@ const cLon=document.getElementById('c-lon'),cLat=document.getElementById('c-lat'
 // ════════════════════════════════════════════
 function nid(id){return String(id).padStart(3,'0');}
 
-// Flag images loaded from local w2560/ folder (flagpedia PNGs, lowercase filename)
+// Flag images loaded from local flags/ folder (flagpedia PNGs, lowercase filename)
 function flagImg(a2, size=32){
   if(!a2) return `<span style="color:#aaa;font-size:.75rem">${a2||''}</span>`;
-  return `<img src="w2560/${a2.toLowerCase()}.png" alt="${a2}" style="height:${size}px;width:auto;vertical-align:middle;border-radius:2px;display:inline-block" onerror="this.style.display='none'">`;
+  return `<img src="flags/${a2.toLowerCase()}.png" alt="${a2}" style="height:${size}px;width:auto;vertical-align:middle;border-radius:2px;display:inline-block" onerror="this.style.display='none'">`;
 }
 
 function setMainFlag(a2){
@@ -727,10 +727,14 @@ function setMainFlag(a2){
   wrap.innerHTML='';
   if(!a2) return;
   const img=document.createElement('img');
-  img.src=`w2560/${a2.toLowerCase()}.png`;
+  const src=`flags/${a2.toLowerCase()}.png`;
+  console.log('Loading flag:', src);
+  img.src=src;
   img.alt=a2;
   img.style.cssText='height:110px;width:auto;max-width:240px;border-radius:3px;filter:drop-shadow(0 4px 16px rgba(0,0,0,.6));display:block';
+  img.onload=function(){ console.log('Flag loaded OK:', src); };
   img.onerror=function(){
+    console.error('Flag failed to load:', src);
     wrap.innerHTML=`<div style="font-size:2.5rem;color:#fff;font-family:'Bebas Neue',sans-serif;letter-spacing:.15em">${a2}</div>`;
   };
   wrap.appendChild(img);
